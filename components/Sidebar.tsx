@@ -1,19 +1,16 @@
 import React from 'react';
-import { User } from '../types.ts';
-import { DashboardIcon, AccountsIcon, TransactionsIcon, SettingsIcon, LogoutIcon, ReportsIcon } from './icons.tsx';
+import { DashboardIcon, AccountsIcon, TransactionsIcon, SettingsIcon, ReportsIcon } from './icons.tsx';
 import { Logo } from './Logo.tsx';
 
 type View = 'dashboard' | 'accounts' | 'transactions' | 'settings' | 'reports';
 
 interface SidebarProps {
-    user: User;
-    onLogout: () => void;
     currentView: View;
     onViewChange: (view: View) => void;
     isOpen: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, currentView, onViewChange, isOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen }) => {
     const navItems = [
         { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
         { id: 'accounts', label: 'Contas', icon: AccountsIcon },
@@ -29,9 +26,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, currentView, onViewCh
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-expense to-income bg-clip-text text-transparent">
                     MAIRFIM
                 </h1>
-            </div>
-            <div className="p-4 border-b border-border">
-                 <p className="text-sm text-text-secondary">Bem-vindo, {user.name}!</p>
             </div>
             <nav className="flex-1 p-4 space-y-2">
                 {navItems.map(item => (
@@ -49,15 +43,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, currentView, onViewCh
                     </button>
                 ))}
             </nav>
-            <div className="p-4 border-t border-border">
-                <button
-                    onClick={onLogout}
-                    className="w-full flex items-center p-3 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-text-primary transition-colors"
-                >
-                    <LogoutIcon className="w-6 h-6 mr-3" />
-                    Sair
-                </button>
-            </div>
         </aside>
     );
 };

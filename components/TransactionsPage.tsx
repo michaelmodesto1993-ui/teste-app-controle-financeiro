@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Transaction, Account, TransactionType, TransactionCategory, RecurrenceType, RecurrenceFrequency, AccountType } from '../types.ts';
 import { formatCurrency, formatDate, formatDateReadable, formatMonthYear, calculateCreditCardDueDate } from '../utils/helpers.ts';
 import { PlusIcon, EditIcon, TrashIcon, IncomeIcon, ExpenseIcon } from './icons.tsx';
+import { getBankColor } from '../utils/bankStyles.ts';
 
 interface TransactionsPageProps {
     transactions: Transaction[];
@@ -66,12 +67,8 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, accou
             onUpdateTransaction({ ...transaction, isPaid: !transaction.isPaid });
         }
     };
-
-    const getAccountNameAndType = (accountId: string) => {
-        const account = accounts.find(a => a.id === accountId);
-        return account ? `${account.name} (${account.type})` : 'N/A';
-    };
-    const getAccountCurrency = (accountId: string) => accounts.find(a => a.id === accountId)?.currency;
+    
+    const getAccount = (accountId: string) => accounts.find(a => a.id === accountId);
     
     const getCategoryDisplay = (transaction: Transaction) => {
         if (transaction.category === TransactionCategory.OTHER && transaction.customCategory) {
@@ -100,56 +97,67 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, accou
             )}
             <div className="bg-surface p-2 sm:p-6 rounded-lg shadow-lg">
                 <ul className="divide-y divide-border">
-                    {monthlyTransactions.map(t => (
-                        <li key={t.id} className={`py-3 flex flex-col md:flex-row justify-between md:items-center gap-3 transition-opacity ${t.isPaid ? 'opacity-50' : ''}`}>
-                             <div className="flex items-center">
-                                <div className={`p-2 rounded-full mr-4 ${t.type === TransactionType.INCOME ? 'bg-income/20 text-income' : 'bg-expense/20 text-expense'}`}>
-                                    {t.type === TransactionType.INCOME ? <IncomeIcon className="w-5 h-5" /> : <ExpenseIcon className="w-5 h-5" />}
-                                </div>
-                                <div className={`${t.isPaid ? 'line-through' : ''}`}>
-                                    <p className="font-semibold">{t.description}</p>
-                                    <p className="text-sm text-text-secondary">
-                                        {getAccountNameAndType(t.accountId)} &middot; Venc: {formatDateReadable(t.date)} &middot; {getCategoryDisplay(t)}
-                                        {t.purchaseDate && ` (Compra: ${formatDateReadable(t.purchaseDate)})`}
-                                    </p>
-                                    {t.recurrenceType === RecurrenceType.RECURRING && (
-                                        <p className="text-xs text-primary mt-1">{`Recorrência: ${t.recurrenceFrequency}`}</p>
-                                    )}
-                                    {t.recurrenceType === RecurrenceType.INSTALLMENT && (
-                                        <p className="text-xs text-primary mt-1">{`Parcela: ${t.installmentCurrent} de ${t.installmentTotal}`}</p>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-end space-x-2 sm:space-x-4 pl-12 md:pl-0">
-                                <span className={`font-bold text-sm sm:text-base ${t.isPaid ? 'line-through' : ''} ${t.type === TransactionType.INCOME ? 'text-income' : 'text-expense'}`}>
-                                    {t.type === TransactionType.EXPENSE ? '-' : ''}{formatCurrency(t.amount, getAccountCurrency(t.accountId))}
-                                </span>
-                                <div className="flex items-center space-x-1 sm:space-x-2">
-                                    {t.type === TransactionType.EXPENSE && (
-                                        <div className="w-20 text-center">
-                                            {!t.isPaid ? (
-                                                <button
-                                                    onClick={() => handleTogglePaid(t)}
-                                                    className="py-1 px-3 text-sm bg-primary text-white font-bold rounded hover:bg-primary-dark transition-colors"
-                                                >
-                                                    Pagar
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleTogglePaid(t)}
-                                                    className="py-1 px-3 text-sm border border-income text-income font-bold rounded hover:bg-income/10 transition-colors"
-                                                >
-                                                    Pago
-                                                </button>
-                                            )}
+                    {monthlyTransactions.map(t => {
+                        const account = getAccount(t.accountId);
+                        const bankColor = account ? getBankColor(account.name) : getBankColor('default');
+
+                        return (
+                            <li key={t.id} className={`py-3 flex flex-col md:flex-row justify-between md:items-center gap-3 transition-opacity ${t.isPaid ? 'opacity-50' : ''}`}>
+                                 <div className="flex items-center">
+                                    <div className={`p-2 rounded-full mr-4 ${t.type === TransactionType.INCOME ? 'bg-income/20 text-income' : 'bg-expense/20 text-expense'}`}>
+                                        {t.type === TransactionType.INCOME ? <IncomeIcon className="w-5 h-5" /> : <ExpenseIcon className="w-5 h-5" />}
+                                    </div>
+                                    <div className={`${t.isPaid ? 'line-through' : ''}`}>
+                                        <p className="font-semibold">{t.description}</p>
+                                        <div className="text-sm text-text-secondary flex items-center flex-wrap">
+                                            <div className="flex items-center mr-1">
+                                                <span className="w-2 h-2 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: bankColor }}></span>
+                                                <span className="truncate">{account ? `${account.name} (${account.type})` : 'N/A'}</span>
+                                            </div>
+                                            <span>&middot; Venc: {formatDateReadable(t.date)}</span>
+                                            <span className="mx-1">&middot;</span>
+                                            <span>{getCategoryDisplay(t)}</span>
+                                            {t.purchaseDate && <span className="ml-1">(Compra: {formatDateReadable(t.purchaseDate)})</span>}
                                         </div>
-                                    )}
-                                    <button onClick={() => openModal(t)} className="p-2 text-text-secondary hover:text-white"><EditIcon className="w-5 h-5" /></button>
-                                    <button onClick={() => onDeleteTransaction(t.id)} className="p-2 text-expense hover:text-expense/80"><TrashIcon className="w-5 h-5" /></button>
+                                        {t.recurrenceType === RecurrenceType.RECURRING && (
+                                            <p className="text-xs text-primary mt-1">{`Recorrência: ${t.recurrenceFrequency}`}</p>
+                                        )}
+                                        {t.recurrenceType === RecurrenceType.INSTALLMENT && (
+                                            <p className="text-xs text-primary mt-1">{`Parcela: ${t.installmentCurrent} de ${t.installmentTotal}`}</p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                    ))}
+                                <div className="flex items-center justify-end space-x-2 sm:space-x-4 pl-12 md:pl-0">
+                                    <span className={`font-bold text-sm sm:text-base ${t.isPaid ? 'line-through' : ''} ${t.type === TransactionType.INCOME ? 'text-income' : 'text-expense'}`}>
+                                        {t.type === TransactionType.EXPENSE ? '-' : ''}{formatCurrency(t.amount, account?.currency)}
+                                    </span>
+                                    <div className="flex items-center space-x-1 sm:space-x-2">
+                                        {t.type === TransactionType.EXPENSE && (
+                                            <div className="w-20 text-center">
+                                                {!t.isPaid ? (
+                                                    <button
+                                                        onClick={() => handleTogglePaid(t)}
+                                                        className="py-1 px-3 text-sm bg-primary text-white font-bold rounded hover:bg-primary-dark transition-colors"
+                                                    >
+                                                        Pagar
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleTogglePaid(t)}
+                                                        className="py-1 px-3 text-sm border border-income text-income font-bold rounded hover:bg-income/10 transition-colors"
+                                                    >
+                                                        Pago
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                        <button onClick={() => openModal(t)} className="p-2 text-text-secondary hover:text-white"><EditIcon className="w-5 h-5" /></button>
+                                        <button onClick={() => onDeleteTransaction(t.id)} className="p-2 text-expense hover:text-expense/80"><TrashIcon className="w-5 h-5" /></button>
+                                    </div>
+                                </div>
+                            </li>
+                        )
+                    })}
                      {monthlyTransactions.length === 0 && (
                         <p className="text-text-secondary text-center py-4">Nenhuma transação registrada para este mês.</p>
                     )}

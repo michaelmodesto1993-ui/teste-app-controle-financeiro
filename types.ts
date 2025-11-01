@@ -8,12 +8,15 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    password?: string; // Should be hashed in a real app
+    // Fix: Add the missing 'password' property to the User interface to resolve type errors.
+    password: string;
 }
 
 export enum AccountType {
     CHECKING = 'Conta Corrente',
+    SAVINGS = 'Conta Poupança',
     CREDIT_CARD = 'Cartão de Crédito',
+    INVESTMENT = 'Conta de Investimento',
 }
 
 export interface Account {

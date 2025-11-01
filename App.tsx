@@ -1,128 +1,48 @@
 import React, { useState, useEffect } from 'react';
 // Fix: Add file extension to import to ensure module resolution.
-import Login from './components/Login.tsx';
-// Fix: Add file extension to import to ensure module resolution.
 import Dashboard from './components/Dashboard.tsx';
 // Fix: Add file extension to import to ensure module resolution.
-import { User, Account, Transaction, ThemeName, TransactionType, TransactionCategory, RecurrenceType, AccountType } from './types.ts';
+import { Account, Transaction, ThemeName, TransactionType, TransactionCategory, RecurrenceType, AccountType } from './types.ts';
 // Fix: Add file extension to import to ensure module resolution.
 import useLocalStorage from './hooks/useLocalStorage.ts';
 // Fix: Add file extension to import to ensure module resolution.
-import { initialUsers, initialAccounts, initialTransactions } from './utils/initialData.ts';
+import { initialAccounts, initialTransactions } from './utils/initialData.ts';
 // Fix: Add file extension to import to ensure module resolution.
 import { applyTheme } from './utils/themes.ts';
 // Fix: Add file extension to import to ensure module resolution.
 import { formatDate, calculateCreditCardDueDate } from './utils/helpers.ts';
+// Fix: Add file extension to import to ensure module resolution.
+import SplashScreen from './components/SplashScreen.tsx';
 
 const App: React.FC = () => {
-    // Global state, not user-specific
-    const [users, setUsers] = useLocalStorage<User[]>('users', initialUsers);
-    const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // User-specific state, managed with useState and useEffects for persistence
-    const [accounts, setAccounts] = useState<Account[]>([]);
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [theme, setTheme] = useState<ThemeName>('dark');
-    const [investmentPercentage, setInvestmentPercentage] = useState<number>(20);
-    const [creditCardAlertThreshold, setCreditCardAlertThreshold] = useState<number>(80);
+    // State is now managed globally for a single-user experience, persisting to localStorage.
+    const [accounts, setAccounts] = useLocalStorage<Account[]>('mairfim-accounts', initialAccounts);
+    const [transactions, setTransactions] = useLocalStorage<Transaction[]>('mairfim-transactions', initialTransactions);
+    const [theme, setTheme] = useLocalStorage<ThemeName>('mairfim-theme', 'dark');
+    const [investmentPercentage, setInvestmentPercentage] = useLocalStorage<number>('mairfim-investmentPercentage', 20);
+    const [creditCardAlertThreshold, setCreditCardAlertThreshold] = useLocalStorage<number>('mairfim-creditCardAlertThreshold', 80);
 
-
-    // Effect to LOAD data when currentUser changes (e.g., on login/logout)
+    // Effect to hide the splash screen after a delay
     useEffect(() => {
-        if (currentUser) {
-            // Load data from localStorage using user-specific keys
-            const userAccounts = JSON.parse(localStorage.getItem(`accounts_${currentUser.id}`) || 'null');
-            const userTransactions = JSON.parse(localStorage.getItem(`transactions_${currentUser.id}`) || 'null');
-            const userTheme = JSON.parse(localStorage.getItem(`theme_${currentUser.id}`) || 'null');
-            const userInvPerc = JSON.parse(localStorage.getItem(`investmentPercentage_${currentUser.id}`) || 'null');
-            const userCreditAlert = JSON.parse(localStorage.getItem(`creditCardAlertThreshold_${currentUser.id}`) || 'null');
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 2500); // 2.5 seconds
 
-            // For the initial seed user 'user-1', load sample data if they have no data saved yet.
-            if (currentUser.id === 'user-1' && userAccounts === null) {
-                setAccounts(initialAccounts);
-            } else {
-                setAccounts(userAccounts || []);
-            }
+        return () => clearTimeout(timer);
+    }, []);
 
-            if (currentUser.id === 'user-1' && userTransactions === null) {
-                setTransactions(initialTransactions);
-            } else {
-                setTransactions(userTransactions || []);
-            }
-            
-            setTheme(userTheme || 'dark');
-            setInvestmentPercentage(userInvPerc ?? 20); // Use nullish coalescing to allow 0%
-            setCreditCardAlertThreshold(userCreditAlert ?? 80);
-        } else {
-            // If no user is logged in, clear all user-specific state
-            setAccounts([]);
-            setTransactions([]);
-            setTheme('dark');
-            setInvestmentPercentage(20);
-            setCreditCardAlertThreshold(80);
-        }
-    }, [currentUser]);
-
-    // Effects to SAVE data to localStorage whenever it changes
+    // Effect to apply the theme whenever it changes
     useEffect(() => {
-        if (currentUser) {
-            localStorage.setItem(`accounts_${currentUser.id}`, JSON.stringify(accounts));
-        }
-    }, [accounts, currentUser]);
-
-    useEffect(() => {
-        if (currentUser) {
-            localStorage.setItem(`transactions_${currentUser.id}`, JSON.stringify(transactions));
-        }
-    }, [transactions, currentUser]);
-
-    useEffect(() => {
-        if (currentUser) {
-            localStorage.setItem(`theme_${currentUser.id}`, JSON.stringify(theme));
-        }
-        applyTheme(theme); // Apply theme to the UI, but save it per-user
-    }, [theme, currentUser]);
-
-    useEffect(() => {
-        if (currentUser) {
-            localStorage.setItem(`investmentPercentage_${currentUser.id}`, JSON.stringify(investmentPercentage));
-        }
-    }, [investmentPercentage, currentUser]);
-
-    useEffect(() => {
-        if (currentUser) {
-            localStorage.setItem(`creditCardAlertThreshold_${currentUser.id}`, JSON.stringify(creditCardAlertThreshold));
-        }
-    }, [creditCardAlertThreshold, currentUser]);
-
-    const handleLogin = (user: User) => {
-        setCurrentUser(user);
-    };
-
-    const handleRegister = (newUser: Omit<User, 'id' | 'password'> & { passwordPlain: string }): User | null => {
-        if (users.some(u => u.email === newUser.email)) {
-            return null;
-        }
-        const user: User = {
-            id: `user-${Date.now()}`,
-            name: newUser.name,
-            email: newUser.email,
-            password: newUser.passwordPlain, // Storing plain text as per login logic
-        };
-        setUsers([...users, user]);
-        return user;
-    };
-
-    const handleLogout = () => {
-        setCurrentUser(null);
-    };
+        applyTheme(theme);
+    }, [theme]);
 
     const handleAddAccount = (account: Omit<Account, 'id' | 'userId'>) => {
-        if (!currentUser) return;
         const newAccount: Account = {
             ...account,
             id: `acc-${Date.now()}`,
-            userId: currentUser.id
+            userId: 'local-user' // Static user ID for a single-user app
         };
         setAccounts([...accounts, newAccount]);
     };
@@ -138,8 +58,6 @@ const App: React.FC = () => {
     };
 
     const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'userId'>) => {
-        if (!currentUser) return;
-
         const account = accounts.find(a => a.id === transaction.accountId);
 
         // --- Handle Installments ---
@@ -160,7 +78,7 @@ const App: React.FC = () => {
                     const newInstallment: Transaction = {
                         ...transaction,
                         id: `t-${Date.now()}-${i}`,
-                        userId: currentUser.id,
+                        userId: 'local-user',
                         amount: installmentAmount,
                         date: formatDate(installmentDueDate.toISOString()), // Calculated Due Date
                         purchaseDate: formatDate(purchaseDate.toISOString()), // Original Purchase Date
@@ -178,7 +96,7 @@ const App: React.FC = () => {
                     const newInstallment: Transaction = {
                         ...transaction,
                         id: `t-${Date.now()}-${i}`,
-                        userId: currentUser.id,
+                        userId: 'local-user',
                         amount: installmentAmount,
                         date: formatDate(installmentDate.toISOString()),
                         description: `${transaction.description} (${i + 1}/${transaction.installmentTotal})`,
@@ -196,7 +114,7 @@ const App: React.FC = () => {
         const newTransaction: Transaction = {
             ...transaction,
             id: `t-${Date.now()}`,
-            userId: currentUser.id
+            userId: 'local-user'
         };
 
         // For new credit card expenses, they are always unpaid initially.
@@ -211,7 +129,7 @@ const App: React.FC = () => {
             const investmentAmount = newTransaction.amount * (investmentPercentage / 100);
             const investmentTransaction: Transaction = {
                 id: `t-inv-${Date.now()}`,
-                userId: currentUser.id,
+                userId: 'local-user',
                 accountId: newTransaction.accountId,
                 type: TransactionType.EXPENSE,
                 description: `Investimento Automático (${newTransaction.description})`,
@@ -234,29 +152,34 @@ const App: React.FC = () => {
         setTransactions(transactions.filter(t => t.id !== transactionId));
     };
 
-    if (!currentUser) {
-        return <Login onAuthSuccess={handleLogin} onRegister={handleRegister} users={users} />;
+    const handleClearAllTransactions = () => {
+        setTransactions([]);
+    };
+
+    if (isLoading) {
+        return <SplashScreen />;
     }
 
     return (
-        <Dashboard
-            user={currentUser}
-            accounts={accounts}
-            transactions={transactions}
-            onLogout={handleLogout}
-            onAddAccount={handleAddAccount}
-            onUpdateAccount={handleUpdateAccount}
-            onDeleteAccount={handleDeleteAccount}
-            onAddTransaction={handleAddTransaction}
-            onUpdateTransaction={handleUpdateTransaction}
-            onDeleteTransaction={handleDeleteTransaction}
-            theme={theme}
-            onThemeChange={setTheme}
-            investmentPercentage={investmentPercentage}
-            onInvestmentPercentageChange={setInvestmentPercentage}
-            creditCardAlertThreshold={creditCardAlertThreshold}
-            onCreditCardAlertThresholdChange={setCreditCardAlertThreshold}
-        />
+        <div className="animate-fadeIn">
+            <Dashboard
+                accounts={accounts}
+                transactions={transactions}
+                onAddAccount={handleAddAccount}
+                onUpdateAccount={handleUpdateAccount}
+                onDeleteAccount={handleDeleteAccount}
+                onAddTransaction={handleAddTransaction}
+                onUpdateTransaction={handleUpdateTransaction}
+                onDeleteTransaction={handleDeleteTransaction}
+                theme={theme}
+                onThemeChange={setTheme}
+                investmentPercentage={investmentPercentage}
+                onInvestmentPercentageChange={setInvestmentPercentage}
+                creditCardAlertThreshold={creditCardAlertThreshold}
+                onCreditCardAlertThresholdChange={setCreditCardAlertThreshold}
+                onClearAllTransactions={handleClearAllTransactions}
+            />
+        </div>
     );
 };
 

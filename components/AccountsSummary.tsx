@@ -3,6 +3,7 @@ import React from 'react';
 import { Account, Transaction, TransactionType, AccountType } from '../types.ts';
 // Fix: Add file extension to import to ensure module resolution.
 import { formatCurrency } from '../utils/helpers.ts';
+import { getBankColor } from '../utils/bankStyles.ts';
 
 interface AccountsSummaryProps {
     accounts: Account[];
@@ -45,13 +46,19 @@ const AccountsSummary: React.FC<AccountsSummaryProps> = ({ accounts, transaction
             {accounts.length > 0 ? (
                 <ul className="space-y-4">
                     {accounts.map(account => {
-                        if (account.type === AccountType.CHECKING) {
+                        const bankColor = getBankColor(account.name);
+                        const isCheckingType = [AccountType.CHECKING, AccountType.SAVINGS, AccountType.INVESTMENT].includes(account.type);
+
+                        if (isCheckingType) {
                             const balance = calculateBalance(account.id, account.initialBalance);
                             return (
                                 <li key={account.id} className="flex justify-between items-center">
-                                    <div>
-                                        <p className="font-semibold">{account.name}</p>
-                                        <p className="text-sm text-text-secondary">{account.type}</p>
+                                    <div className="flex items-center">
+                                        <span className="w-2 h-2 rounded-full mr-3 flex-shrink-0" style={{ backgroundColor: bankColor }}></span>
+                                        <div>
+                                            <p className="font-semibold">{account.name}</p>
+                                            <p className="text-sm text-text-secondary">{account.type}</p>
+                                        </div>
                                     </div>
                                     <span className={`font-bold text-lg ${balance >= 0 ? 'text-income' : 'text-expense'}`}>
                                         {formatCurrency(balance, account.currency)}
@@ -67,9 +74,12 @@ const AccountsSummary: React.FC<AccountsSummaryProps> = ({ accounts, transaction
                             return (
                                 <li key={account.id}>
                                     <div className="flex justify-between items-center mb-2">
-                                        <div>
-                                            <p className="font-semibold">{account.name}</p>
-                                            <p className="text-sm text-text-secondary">{account.type}</p>
+                                        <div className="flex items-center">
+                                            <span className="w-2 h-2 rounded-full mr-3 flex-shrink-0" style={{ backgroundColor: bankColor }}></span>
+                                            <div>
+                                                <p className="font-semibold">{account.name}</p>
+                                                <p className="text-sm text-text-secondary">{account.type}</p>
+                                            </div>
                                         </div>
                                         <div className="text-right">
                                             <p className="font-bold text-lg text-expense">{formatCurrency(invoice, account.currency)}</p>

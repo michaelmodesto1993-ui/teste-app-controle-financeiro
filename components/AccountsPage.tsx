@@ -7,6 +7,7 @@ import { formatCurrency } from '../utils/helpers.ts';
 import { PlusIcon, EditIcon, TrashIcon } from './icons.tsx';
 // DEFINITIVE FIX: Corrected the import path to go up one directory level.
 import { bankList } from '../utils/banks.ts';
+import { getBankColor } from '../utils/bankStyles.ts';
 
 interface AccountsPageProps {
     accounts: Account[];
@@ -89,23 +90,33 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, transactions, onA
             </div>
             <div className="bg-surface p-6 rounded-lg shadow-lg">
                 <ul className="divide-y divide-border">
-                    {accounts.map(acc => (
+                    {accounts.map(acc => {
+                        const bankColor = getBankColor(acc.name);
+                        const isCheckingType = [AccountType.CHECKING, AccountType.SAVINGS, AccountType.INVESTMENT].includes(acc.type);
+
+                        return (
                             <li key={acc.id} className="py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                                {acc.type === AccountType.CHECKING ? (
-                                    <div className="flex-1">
-                                        <p className="font-semibold">{acc.name} <span className="text-sm text-text-secondary">({acc.type})</span></p>
-                                        <p className="text-sm text-text-secondary">
-                                            Saldo Inicial: {formatCurrency(acc.initialBalance, acc.currency)}
-                                        </p>
+                                {isCheckingType ? (
+                                    <div className="flex-1 flex items-center">
+                                         <span className="w-3 h-3 rounded-full mr-4 flex-shrink-0" style={{ backgroundColor: bankColor }}></span>
+                                        <div>
+                                            <p className="font-semibold">{acc.name} <span className="text-sm text-text-secondary">({acc.type})</span></p>
+                                            <p className="text-sm text-text-secondary">
+                                                Saldo Inicial: {formatCurrency(acc.initialBalance, acc.currency)}
+                                            </p>
+                                        </div>
                                     </div>
                                 ) : ( // Credit Card
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                                <p className="font-semibold">{acc.name} <span className="text-sm text-text-secondary">({acc.type})</span></p>
-                                                <p className="text-sm text-text-secondary">
-                                                    Fatura: <span className="font-medium text-expense">{formatCurrency(calculateAvailableCredit(acc).used, acc.currency)}</span>
-                                                </p>
+                                             <div className="flex items-center">
+                                                <span className="w-3 h-3 rounded-full mr-4 flex-shrink-0" style={{ backgroundColor: bankColor }}></span>
+                                                <div>
+                                                    <p className="font-semibold">{acc.name} <span className="text-sm text-text-secondary">({acc.type})</span></p>
+                                                    <p className="text-sm text-text-secondary">
+                                                        Fatura: <span className="font-medium text-expense">{formatCurrency(calculateAvailableCredit(acc).used, acc.currency)}</span>
+                                                    </p>
+                                                </div>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-sm text-text-secondary">Limite</p>
@@ -148,7 +159,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, transactions, onA
                                 </div>
                             </li>
                         )
-                    )}
+                    })}
                      {accounts.length === 0 && (
                         <p className="text-text-secondary text-center py-4">Nenhuma conta cadastrada.</p>
                     )}
@@ -209,6 +220,8 @@ const AccountModal: React.FC<{
         onSave(dataToSave);
     };
 
+    const showBalanceField = [AccountType.CHECKING, AccountType.SAVINGS, AccountType.INVESTMENT].includes(type);
+
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-surface rounded-lg shadow-lg p-8 w-full max-w-md overflow-y-auto max-h-full">
@@ -254,7 +267,7 @@ const AccountModal: React.FC<{
                         </>
                     )}
 
-                    {type === AccountType.CHECKING && (
+                    {showBalanceField && (
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="initialBalance">Saldo Inicial</label>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Account, Transaction, ThemeName } from '../types.ts';
+import { Account, Transaction, ThemeName } from '../types.ts';
 
 import Sidebar from './Sidebar.tsx';
 import DashboardView from './DashboardView.tsx';
@@ -21,10 +21,8 @@ const viewTitles: Record<View, string> = {
 };
 
 interface DashboardProps {
-    user: User;
     accounts: Account[];
     transactions: Transaction[];
-    onLogout: () => void;
     onAddAccount: (account: Omit<Account, 'id' | 'userId'>) => void;
     onUpdateAccount: (account: Account) => void;
     onDeleteAccount: (accountId: string) => void;
@@ -37,6 +35,7 @@ interface DashboardProps {
     onInvestmentPercentageChange: (percentage: number) => void;
     creditCardAlertThreshold: number;
     onCreditCardAlertThresholdChange: (percentage: number) => void;
+    onClearAllTransactions: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
@@ -57,7 +56,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             case 'transactions':
                 return <TransactionsPage transactions={props.transactions} accounts={props.accounts} onAddTransaction={props.onAddTransaction} onUpdateTransaction={props.onUpdateTransaction} onDeleteTransaction={props.onDeleteTransaction} />;
             case 'settings':
-                return <SettingsPage theme={props.theme} onThemeChange={props.onThemeChange} investmentPercentage={props.investmentPercentage} onInvestmentPercentageChange={props.onInvestmentPercentageChange} creditCardAlertThreshold={props.creditCardAlertThreshold} onCreditCardAlertThresholdChange={props.onCreditCardAlertThresholdChange} />;
+                return <SettingsPage theme={props.theme} onThemeChange={props.onThemeChange} investmentPercentage={props.investmentPercentage} onInvestmentPercentageChange={props.onInvestmentPercentageChange} creditCardAlertThreshold={props.creditCardAlertThreshold} onCreditCardAlertThresholdChange={props.onCreditCardAlertThresholdChange} onClearAllTransactions={props.onClearAllTransactions} />;
             case 'reports':
                 return <ReportsPage transactions={props.transactions} accounts={props.accounts} />;
             default:
@@ -76,8 +75,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             )}
             
             <Sidebar 
-                user={props.user} 
-                onLogout={props.onLogout}
                 currentView={currentView}
                 onViewChange={handleViewChange}
                 isOpen={isSidebarOpen}

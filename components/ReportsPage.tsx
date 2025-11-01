@@ -3,6 +3,7 @@ import { Transaction, Account, TransactionType } from '../types.ts';
 import { formatCurrency, formatMonthYear, formatDateReadable } from '../utils/helpers.ts';
 import { IncomeIcon, ExpenseIcon, ExportIcon } from './icons.tsx';
 import YearlySummaryChart from './YearlySummaryChart.tsx';
+import { getBankColor } from '../utils/bankStyles.ts';
 
 interface ReportsPageProps {
     transactions: Transaction[];
@@ -170,6 +171,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ transactions, accounts }) => 
                     <ul className="divide-y divide-border">
                         {monthlyTransactions.map(t => {
                             const account = getAccount(t.accountId);
+                            const bankColor = account ? getBankColor(account.name) : getBankColor('default');
                             return (
                             <li key={t.id} className={`py-3 px-2 sm:px-0 flex flex-col sm:flex-row justify-between sm:items-center gap-2 ${t.isPaid ? 'opacity-50' : ''}`}>
                                 <div className="flex items-center">
@@ -178,7 +180,12 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ transactions, accounts }) => 
                                     </div>
                                     <div className={`${t.isPaid ? 'line-through' : ''}`}>
                                         <p className="font-semibold">{t.description}</p>
-                                        <p className="text-sm text-text-secondary">{account ? `${account.name} (${account.type})` : 'N/A'} &middot; {formatDateReadable(t.date)}</p>
+                                        <p className="text-sm text-text-secondary flex items-center">
+                                            <span className="w-2 h-2 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: bankColor }}></span>
+                                            <span className="truncate">{account ? `${account.name} (${account.type})` : 'N/A'}</span>
+                                            <span className="mx-1">&middot;</span>
+                                            <span>{formatDateReadable(t.date)}</span>
+                                        </p>
                                     </div>
                                 </div>
                                 <span className={`font-bold self-end sm:self-center ${t.isPaid ? 'line-through' : ''} ${t.type === TransactionType.INCOME ? 'text-income' : 'text-expense'}`}>

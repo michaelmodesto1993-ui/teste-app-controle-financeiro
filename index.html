@@ -35,6 +35,26 @@
               'text-secondary': 'var(--color-text-secondary)',
               income: 'var(--color-income)',
               expense: 'var(--color-expense)',
+            },
+            keyframes: {
+              fadeOut: {
+                '0%': { opacity: '1' },
+                '80%': { opacity: '1' },
+                '100%': { opacity: '0', visibility: 'hidden' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              }
+            },
+            animation: {
+              fadeOut: 'fadeOut 2.5s ease-in-out forwards',
+              fadeInUp: 'fadeInUp 1s ease-out forwards',
+              fadeIn: 'fadeIn 0.5s ease-in-out forwards',
             }
           }
         }

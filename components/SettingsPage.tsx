@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 // Fix: Add file extension to import to ensure module resolution.
 import { ThemeName } from '../types.ts';
 
@@ -9,6 +9,7 @@ interface SettingsPageProps {
     onInvestmentPercentageChange: (percentage: number) => void;
     creditCardAlertThreshold: number;
     onCreditCardAlertThresholdChange: (percentage: number) => void;
+    onClearAllTransactions: () => void;
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({
@@ -18,7 +19,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     onInvestmentPercentageChange,
     creditCardAlertThreshold,
     onCreditCardAlertThresholdChange,
+    onClearAllTransactions,
 }) => {
+    const [isClearDataModalOpen, setIsClearDataModalOpen] = useState(false);
+
     return (
         <div className="space-y-8 max-w-3xl">
             <div className="bg-surface p-6 rounded-lg shadow-lg">
@@ -81,8 +85,58 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                      <span className="font-semibold w-16 text-center">{creditCardAlertThreshold}%</span>
                 </div>
             </div>
+
+            <div className="bg-surface p-6 rounded-lg shadow-lg border border-expense/50">
+                <h3 className="font-bold mb-2 text-expense">Zona de Perigo</h3>
+                <p className="text-text-secondary text-sm mb-4">
+                    A ação abaixo é irreversível. Tenha certeza do que está fazendo.
+                </p>
+                <button
+                    onClick={() => setIsClearDataModalOpen(true)}
+                    className="bg-expense text-white font-bold py-2 px-4 rounded hover:bg-expense/80 transition-colors"
+                >
+                    Limpar Todas as Transações
+                </button>
+            </div>
+
+            {isClearDataModalOpen && (
+                <ConfirmationModal
+                    onConfirm={() => {
+                        onClearAllTransactions();
+                        setIsClearDataModalOpen(false);
+                    }}
+                    onClose={() => setIsClearDataModalOpen(false)}
+                />
+            )}
         </div>
     );
 };
+
+const ConfirmationModal: React.FC<{
+    onConfirm: () => void;
+    onClose: () => void;
+}> = ({ onConfirm, onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-surface rounded-lg shadow-lg p-8 w-full max-w-md">
+                <h3 className="text-lg font-bold mb-2">Confirmar Limpeza de Dados</h3>
+                <p className="text-text-secondary mb-6">
+                    Você tem certeza que deseja excluir <span className="font-bold text-expense">TODAS</span> as suas transações?
+                    <br />
+                    Esta ação não pode ser desfeita.
+                </p>
+                <div className="flex justify-end space-x-4">
+                    <button type="button" onClick={onClose} className="py-2 px-4 rounded bg-surface-dark text-text-secondary hover:bg-border">
+                        Cancelar
+                    </button>
+                    <button type="button" onClick={onConfirm} className="py-2 px-4 rounded bg-expense text-white hover:bg-expense/80">
+                        Sim, Excluir Tudo
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 export default SettingsPage;
