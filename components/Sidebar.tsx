@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout }) 
     return (
         <aside className="w-64 bg-surface flex flex-col border-r border-border">
             <div className="h-16 flex items-center px-6 border-b border-border">
-                <h1 className="text-xl font-bold">FinTrack</h1>
+                <h1 className="text-xl font-bold">FinTrack Pro</h1>
             </div>
             <nav className="flex-1 px-4 py-6">
                 <ul>

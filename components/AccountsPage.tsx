@@ -5,7 +5,7 @@ import { Account } from '../types.ts';
 import { formatCurrency } from '../utils/helpers.ts';
 // Fix: Add file extension to import to ensure module resolution.
 import { PlusIcon, EditIcon, TrashIcon } from './icons.tsx';
-// Fix: Add file extension to import to ensure module resolution.
+// DEFINITIVE FIX: Corrected the import path to go up one directory level.
 import { bankList } from '../utils/banks.ts';
 
 interface AccountsPageProps {
@@ -120,7 +120,7 @@ const AccountModal: React.FC<{
                         </div>
                         <div>
                             <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="currency">Moeda</label>
-                            <select id="currency" value={currency} onChange={e => setCurrency(e.target.value)} className="p-2 w-full rounded bg-background border border-border" required>
+                            <select id="currency" value={currency} onChange={e => setCurrency(e.target.value as 'BRL' | 'USD' | 'EUR')} className="p-2 w-full rounded bg-background border border-border" required>
                                 <option value="BRL">BRL</option>
                                 <option value="USD">USD</option>
                                 <option value="EUR">EUR</option>

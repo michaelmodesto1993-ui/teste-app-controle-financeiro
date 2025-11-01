@@ -1,84 +1,65 @@
-import { User, Account, Transaction, TransactionType, TransactionCategory } from '../types.ts';
-
-const userId1 = 'user-1';
-const accountId1 = 'acc-1';
-const accountId2 = 'acc-2';
+import { User, Account, Transaction, TransactionType, TransactionCategory, RecurrenceType, RecurrenceFrequency } from '../types.ts';
 
 export const initialUsers: User[] = [
-    {
-        id: userId1,
-        name: 'João Silva',
-        email: 'joao.silva@example.com',
-        password: 'password123',
-    },
+    { id: 'user-1', name: 'John Doe', email: 'john@example.com', password: 'password123' }
 ];
 
 export const initialAccounts: Account[] = [
-    {
-        id: accountId1,
-        userId: userId1,
-        name: 'Nubank',
-        initialBalance: 50.00,
-        currency: 'BRL',
-    },
-    {
-        id: accountId2,
-        userId: userId1,
-        name: 'Itaú Unibanco',
-        initialBalance: 1250.75,
-        currency: 'BRL',
-    },
+    { id: 'acc-1', userId: 'user-1', name: 'Bradesco', initialBalance: 1500, currency: 'BRL' },
+    { id: 'acc-2', userId: 'user-1', name: 'Nubank', initialBalance: 3200, currency: 'BRL' },
 ];
 
 export const initialTransactions: Transaction[] = [
     {
-        id: 'txn-1',
-        userId: userId1,
-        accountId: accountId2,
+        id: 't-1',
+        userId: 'user-1',
+        accountId: 'acc-2',
         type: TransactionType.INCOME,
         description: 'Salário de Maio',
         amount: 5000,
-        date: '2024-05-05T03:00:00.000Z',
+        date: '2024-05-01',
         category: TransactionCategory.SALARY,
+        recurrenceType: RecurrenceType.RECURRING,
+        recurrenceFrequency: RecurrenceFrequency.MONTHLY,
     },
     {
-        id: 'txn-2',
-        userId: userId1,
-        accountId: accountId2,
+        id: 't-2',
+        userId: 'user-1',
+        accountId: 'acc-1',
         type: TransactionType.EXPENSE,
         description: 'Aluguel',
-        amount: 1500,
-        date: '2024-05-06T03:00:00.000Z',
+        amount: 1200,
+        date: '2024-05-05',
         category: TransactionCategory.HOUSING,
+        recurrenceType: RecurrenceType.RECURRING,
+        recurrenceFrequency: RecurrenceFrequency.MONTHLY,
+        isPaid: false, // Example of an unpaid bill
     },
     {
-        id: 'txn-3',
-        userId: userId1,
-        accountId: accountId1,
-        type: TransactionType.EXPENSE,
-        description: 'Almoço',
-        amount: 35.50,
-        date: '2024-05-07T03:00:00.000Z',
-        category: TransactionCategory.FOOD,
-    },
-    {
-        id: 'txn-4',
-        userId: userId1,
-        accountId: accountId2,
+        id: 't-3',
+        userId: 'user-1',
+        accountId: 'acc-2',
         type: TransactionType.EXPENSE,
         description: 'Supermercado',
-        amount: 450.20,
-        date: '2024-05-08T03:00:00.000Z',
+        amount: 450,
+        date: '2024-05-10',
         category: TransactionCategory.FOOD,
+        recurrenceType: RecurrenceType.SINGLE,
+        isPaid: true,
     },
     {
-        id: 'txn-5',
-        userId: userId1,
-        accountId: accountId1,
+        id: 't-4',
+        userId: 'user-1',
+        accountId: 'acc-2',
         type: TransactionType.EXPENSE,
-        description: 'Cinema',
-        amount: 60,
-        date: '2024-05-10T03:00:00.000Z',
-        category: TransactionCategory.LEISURE,
-    },
+        description: 'Compra de Smartphone',
+        amount: 250,
+        date: '2024-05-15',
+        category: TransactionCategory.OTHER,
+        customCategory: 'Eletrónicos',
+        recurrenceType: RecurrenceType.INSTALLMENT,
+        installmentCurrent: 3,
+        installmentTotal: 12,
+        isPaid: true,
+    }
 ];
