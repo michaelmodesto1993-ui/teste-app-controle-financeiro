@@ -1,50 +1,54 @@
 import React from 'react';
 // Fix: Add file extension to import to ensure module resolution.
-import { DashboardIcon, AccountsIcon, TransactionsIcon, LogoutIcon } from './icons.tsx';
-
-type Page = 'dashboard' | 'accounts' | 'transactions' | 'settings';
+import { View } from '../types.ts';
+// Fix: Add file extension to import to ensure module resolution.
+import { DashboardIcon, AccountsIcon, TransactionsIcon, SettingsIcon, LogoutIcon } from './icons.tsx';
 
 interface SidebarProps {
-    activePage: Page;
-    setActivePage: (page: Page) => void;
+    currentView: View;
+    onNavigate: (view: View) => void;
     onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage, onLogout }) => {
-    const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-        { id: 'accounts', label: 'Contas', icon: AccountsIcon },
-        { id: 'transactions', label: 'Transações', icon: TransactionsIcon },
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout }) => {
+    const navItems: { view: View; label: string; icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
+        { view: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
+        { view: 'accounts', label: 'Contas', icon: AccountsIcon },
+        { view: 'transactions', label: 'Transações', icon: TransactionsIcon },
+        { view: 'settings', label: 'Configurações', icon: SettingsIcon },
     ];
 
     return (
-        <aside className="w-64 bg-surface flex flex-col">
-            <div className="h-16 flex items-center justify-center border-b border-border">
-                <h1 className="text-xl font-bold">FinTrack Pro</h1>
+        <aside className="w-64 bg-surface flex flex-col border-r border-border">
+            <div className="h-16 flex items-center px-6 border-b border-border">
+                <h1 className="text-xl font-bold">FinTrack</h1>
             </div>
-            <nav className="flex-1 px-4 py-6 space-y-2">
-                {navItems.map(item => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActivePage(item.id as Page)}
-                        className={`w-full flex items-center px-4 py-2 rounded-lg transition-colors ${
-                            activePage === item.id
-                                ? 'bg-primary text-white'
-                                : 'hover:bg-surface-dark'
-                        }`}
-                    >
-                        <item.icon className="w-5 h-5 mr-3" />
-                        <span>{item.label}</span>
-                    </button>
-                ))}
+            <nav className="flex-1 px-4 py-6">
+                <ul>
+                    {navItems.map(({ view, label, icon: Icon }) => (
+                        <li key={view}>
+                            <button
+                                onClick={() => onNavigate(view)}
+                                className={`w-full flex items-center py-2 px-4 rounded transition-colors mb-2 ${
+                                    currentView === view
+                                        ? 'bg-primary/20 text-primary font-semibold'
+                                        : 'hover:bg-surface-dark'
+                                }`}
+                            >
+                                <Icon className="w-5 h-5 mr-3" />
+                                {label}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
             </nav>
             <div className="px-4 py-6 border-t border-border">
-                <button
+                 <button
                     onClick={onLogout}
-                    className="w-full flex items-center px-4 py-2 rounded-lg hover:bg-surface-dark text-text-secondary"
+                    className="w-full flex items-center py-2 px-4 rounded transition-colors hover:bg-surface-dark"
                 >
                     <LogoutIcon className="w-5 h-5 mr-3" />
-                    <span>Sair</span>
+                    Sair
                 </button>
             </div>
         </aside>

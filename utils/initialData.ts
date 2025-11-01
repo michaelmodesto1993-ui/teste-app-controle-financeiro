@@ -1,74 +1,84 @@
 import { User, Account, Transaction, TransactionType, TransactionCategory } from '../types.ts';
 
+const userId1 = 'user-1';
+const accountId1 = 'acc-1';
+const accountId2 = 'acc-2';
+
 export const initialUsers: User[] = [
-    { id: 'user-1', name: 'Usuário Exemplo', email: 'user@example.com', password: 'password123' },
+    {
+        id: userId1,
+        name: 'João Silva',
+        email: 'joao.silva@example.com',
+        password: 'password123',
+    },
 ];
 
 export const initialAccounts: Account[] = [
-    { id: 'acc-1', userId: 'user-1', name: 'Carteira', initialBalance: 150.75, currency: 'BRL' },
-    { id: 'acc-2', userId: 'user-1', name: 'Banco Principal', initialBalance: 2500.00, currency: 'BRL' },
-    { id: 'acc-3', userId: 'user-1', name: 'Poupança', initialBalance: 10000.00, currency: 'BRL' },
+    {
+        id: accountId1,
+        userId: userId1,
+        name: 'Nubank',
+        initialBalance: 50.00,
+        currency: 'BRL',
+    },
+    {
+        id: accountId2,
+        userId: userId1,
+        name: 'Itaú Unibanco',
+        initialBalance: 1250.75,
+        currency: 'BRL',
+    },
 ];
 
 export const initialTransactions: Transaction[] = [
     {
         id: 'txn-1',
-        userId: 'user-1',
-        accountId: 'acc-2',
+        userId: userId1,
+        accountId: accountId2,
         type: TransactionType.INCOME,
-        description: 'Salário Mensal',
+        description: 'Salário de Maio',
         amount: 5000,
-        date: new Date('2023-10-05T12:00:00Z').toISOString(),
+        date: '2024-05-05T03:00:00.000Z',
         category: TransactionCategory.SALARY,
     },
     {
         id: 'txn-2',
-        userId: 'user-1',
-        accountId: 'acc-2',
+        userId: userId1,
+        accountId: accountId2,
         type: TransactionType.EXPENSE,
         description: 'Aluguel',
-        amount: 1200,
-        date: new Date('2023-10-06T12:00:00Z').toISOString(),
+        amount: 1500,
+        date: '2024-05-06T03:00:00.000Z',
         category: TransactionCategory.HOUSING,
     },
     {
         id: 'txn-3',
-        userId: 'user-1',
-        accountId: 'acc-1',
+        userId: userId1,
+        accountId: accountId1,
         type: TransactionType.EXPENSE,
         description: 'Almoço',
-        amount: 25.50,
-        date: new Date('2023-10-07T12:00:00Z').toISOString(),
+        amount: 35.50,
+        date: '2024-05-07T03:00:00.000Z',
         category: TransactionCategory.FOOD,
     },
     {
         id: 'txn-4',
-        userId: 'user-1',
-        accountId: 'acc-2',
+        userId: userId1,
+        accountId: accountId2,
         type: TransactionType.EXPENSE,
         description: 'Supermercado',
-        amount: 350.45,
-        date: new Date('2023-10-08T12:00:00Z').toISOString(),
+        amount: 450.20,
+        date: '2024-05-08T03:00:00.000Z',
         category: TransactionCategory.FOOD,
     },
     {
         id: 'txn-5',
-        userId: 'user-1',
-        accountId: 'acc-1',
+        userId: userId1,
+        accountId: accountId1,
         type: TransactionType.EXPENSE,
         description: 'Cinema',
-        amount: 50,
-        date: new Date('2023-10-09T12:00:00Z').toISOString(),
+        amount: 60,
+        date: '2024-05-10T03:00:00.000Z',
         category: TransactionCategory.LEISURE,
-    },
-     {
-        id: 'txn-6',
-        userId: 'user-1',
-        accountId: 'acc-3',
-        type: TransactionType.INCOME,
-        description: 'Rendimento Poupança',
-        amount: 50.12,
-        date: new Date('2023-10-10T12:00:00Z').toISOString(),
-        category: TransactionCategory.INVESTMENTS,
     },
 ];

@@ -5,6 +5,8 @@ import { Account } from '../types.ts';
 import { formatCurrency } from '../utils/helpers.ts';
 // Fix: Add file extension to import to ensure module resolution.
 import { PlusIcon, EditIcon, TrashIcon } from './icons.tsx';
+// Fix: Add file extension to import to ensure module resolution.
+import { bankList } from '../utils/banks.ts';
 
 interface AccountsPageProps {
     accounts: Account[];
@@ -47,18 +49,21 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, onAddAccount, onU
             </div>
             <div className="bg-surface p-6 rounded-lg shadow-lg">
                 <ul className="divide-y divide-border">
-                    {accounts.map(account => (
-                        <li key={account.id} className="py-3 flex justify-between items-center">
+                    {accounts.map(acc => (
+                        <li key={acc.id} className="py-3 flex justify-between items-center">
                             <div>
-                                <p className="font-semibold">{account.name}</p>
-                                <p className="text-sm text-text-secondary">Saldo Inicial: {formatCurrency(account.initialBalance, account.currency)}</p>
+                                <p className="font-semibold">{acc.name}</p>
+                                <p className="text-sm text-text-secondary">Saldo Inicial: {formatCurrency(acc.initialBalance, acc.currency)}</p>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <button onClick={() => openModal(account)} className="p-2 text-text-secondary hover:text-white"><EditIcon className="w-5 h-5" /></button>
-                                <button onClick={() => onDeleteAccount(account.id)} className="p-2 text-expense hover:text-expense/80"><TrashIcon className="w-5 h-5" /></button>
+                                <button onClick={() => openModal(acc)} className="p-2 text-text-secondary hover:text-white"><EditIcon className="w-5 h-5" /></button>
+                                <button onClick={() => onDeleteAccount(acc.id)} className="p-2 text-expense hover:text-expense/80"><TrashIcon className="w-5 h-5" /></button>
                             </div>
                         </li>
                     ))}
+                     {accounts.length === 0 && (
+                        <p className="text-text-secondary text-center py-4">Nenhuma conta cadastrada.</p>
+                    )}
                 </ul>
             </div>
             {isModalOpen && <AccountModal account={currentAccount} onSave={handleSave} onClose={closeModal} />}
@@ -66,14 +71,29 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, onAddAccount, onU
     );
 };
 
-const AccountModal: React.FC<{ account: Account | null; onSave: (data: Omit<Account, 'id' | 'userId'>) => void; onClose: () => void; }> = ({ account, onSave, onClose }) => {
-    const [name, setName] = useState(account?.name || '');
+const AccountModal: React.FC<{
+    account: Account | null;
+    onSave: (data: Omit<Account, 'id' | 'userId'>) => void;
+    onClose: () => void;
+}> = ({ account, onSave, onClose }) => {
+    // Determine the initial state for the dropdown and custom name field
+    const isStandardBank = account && bankList.includes(account.name);
+    const initialName = isStandardBank ? account.name : (account ? 'Outro' : bankList[0]);
+    const initialCustomName = account && !isStandardBank ? account.name : '';
+
+    const [name, setName] = useState(initialName);
+    const [customName, setCustomName] = useState(initialCustomName);
     const [initialBalance, setInitialBalance] = useState(account?.initialBalance || 0);
     const [currency, setCurrency] = useState(account?.currency || 'BRL');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ name, initialBalance, currency });
+        const accountNameToSave = name === 'Outro' ? customName : name;
+        if (!accountNameToSave) {
+             // Simple validation to prevent saving an empty custom name
+            return;
+        }
+        onSave({ name: accountNameToSave, initialBalance, currency });
     };
 
     return (
@@ -82,18 +102,32 @@ const AccountModal: React.FC<{ account: Account | null; onSave: (data: Omit<Acco
                 <h3 className="text-lg font-bold mb-4">{account ? 'Editar Conta' : 'Adicionar Conta'}</h3>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="name" className="block text-text-secondary text-sm font-bold mb-2">Nome da Conta</label>
-                        <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} className="p-2 w-full rounded bg-background border border-border" required />
+                        <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="accountName">Nome da Conta</label>
+                        <select id="accountName" value={name} onChange={e => setName(e.target.value)} className="p-2 w-full rounded bg-background border border-border" required>
+                            {bankList.map(bank => <option key={bank} value={bank}>{bank}</option>)}
+                        </select>
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="initialBalance" className="block text-text-secondary text-sm font-bold mb-2">Saldo Inicial</label>
-                        <input id="initialBalance" type="number" step="0.01" value={initialBalance} onChange={e => setInitialBalance(parseFloat(e.target.value))} className="p-2 w-full rounded bg-background border border-border" required />
+                    {name === 'Outro' && (
+                         <div className="mb-4">
+                            <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="customAccountName">Nome Personalizado</label>
+                            <input id="customAccountName" type="text" value={customName} onChange={e => setCustomName(e.target.value)} className="p-2 w-full rounded bg-background border border-border" placeholder="Ex: Carteira, Banco XPTO" required />
+                        </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="initialBalance">Saldo Inicial</label>
+                            <input id="initialBalance" type="number" step="0.01" value={initialBalance} onChange={e => setInitialBalance(parseFloat(e.target.value) || 0)} className="p-2 w-full rounded bg-background border border-border" required />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="currency">Moeda</label>
+                            <select id="currency" value={currency} onChange={e => setCurrency(e.target.value)} className="p-2 w-full rounded bg-background border border-border" required>
+                                <option value="BRL">BRL</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className="mb-6">
-                        <label htmlFor="currency" className="block text-text-secondary text-sm font-bold mb-2">Moeda</label>
-                        <input id="currency" type="text" value={currency} onChange={e => setCurrency(e.target.value.toUpperCase())} className="p-2 w-full rounded bg-background border border-border" required />
-                    </div>
-                    <div className="flex justify-end space-x-4">
+                    <div className="flex justify-end space-x-4 mt-6">
                         <button type="button" onClick={onClose} className="py-2 px-4 rounded bg-surface-dark text-text-secondary hover:bg-border">Cancelar</button>
                         <button type="submit" className="py-2 px-4 rounded bg-primary text-white hover:bg-primary-dark">Salvar</button>
                     </div>

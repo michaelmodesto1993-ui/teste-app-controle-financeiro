@@ -4,43 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinTrack Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
     <script type="importmap">
     {
       "imports": {
         "react": "https://aistudiocdn.com/react@^19.2.0",
         "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
         "react/": "https://aistudiocdn.com/react@^19.2.0/",
-        "recharts": "https://aistudiocdn.com/recharts@^3.3.0"
+        "uuid": "https://aistudiocdn.com/uuid@^13.0.0"
       }
     }
     </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            background: '#121826', // Fundo principal escuro
-            surface: '#1E293B',    // Cor de superfície para cartões e modais
-            primary: '#3B82F6',    // Azul primário para botões e destaques
-            'primary-dark': '#2563EB',
-            'primary-light': 'rgba(59, 130, 246, 0.1)',
-            secondary: '#4B5563',  // Cor secundária
-            border: '#374151',     // Cor para bordas
-            income: '#10B981',     // Verde para receitas
-            'income-light': 'rgba(16, 185, 129, 0.1)',
-            expense: '#EF4444',    // Vermelho para despesas
-            'expense-light': 'rgba(239, 68, 68, 0.1)',
-            'text-primary': '#F9FAFB', // Texto principal (quase branco)
-            'text-secondary': '#9CA3AF', // Texto secundário (cinza claro)
-          },
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: 'var(--color-background)',
+              surface: 'var(--color-surface)',
+              'surface-dark': 'var(--color-surface-dark)',
+              border: 'var(--color-border)',
+              primary: 'var(--color-primary)',
+              'primary-dark': 'var(--color-primary-dark)',
+              'text-primary': 'var(--color-text-primary)',
+              'text-secondary': 'var(--color-text-secondary)',
+              income: 'var(--color-income)',
+              expense: 'var(--color-expense)',
+            }
+          }
         }
       }
-    }
     </script>
-    <script type="module" src="/index.tsx"></script>
+
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+    </style>
 </head>
 <body class="bg-background">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

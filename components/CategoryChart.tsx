@@ -11,15 +11,17 @@ interface CategoryChartProps {
 const CategoryChart: React.FC<CategoryChartProps> = ({ transactions }) => {
     const expenses = transactions.filter(t => t.type === TransactionType.EXPENSE);
 
-    const expensesByCategory = expenses.reduce((acc, transaction) => {
+    // Fix: Explicitly type the accumulator in reduce to ensure type safety.
+    const expensesByCategory = expenses.reduce((acc: Record<string, number>, transaction) => {
         const category = transaction.category || TransactionCategory.OTHER;
         acc[category] = (acc[category] || 0) + transaction.amount;
         return acc;
-    }, {} as Record<TransactionCategory, number>);
+    }, {});
 
-    const sortedCategories = Object.entries(expensesByCategory)
-        // Fix: Add explicit types for sort parameters to correct type inference.
-        .sort((itemA: [string, number], itemB: [string, number]) => itemB[1] - itemA[1])
+    // Fix: Add type assertion to Object.entries to ensure amounts are treated as numbers, resolving potential type inference issues.
+    const sortedCategories = (Object.entries(expensesByCategory) as [string, number][])
+        // Fix: Use destructuring in sort for clarity and robust type inference.
+        .sort(([, amountA], [, amountB]) => amountB - amountA)
         .slice(0, 5); // show top 5
 
     const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);

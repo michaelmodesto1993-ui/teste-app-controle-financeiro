@@ -1,83 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+// Fix: Add file extension to import to ensure module resolution.
 import Login from './components/Login.tsx';
+// Fix: Add file extension to import to ensure module resolution.
 import Dashboard from './components/Dashboard.tsx';
+// Fix: Add file extension to import to ensure module resolution.
 import useLocalStorage from './hooks/useLocalStorage.ts';
+// Fix: Add file extension to import to ensure module resolution.
 import { initialUsers, initialAccounts, initialTransactions } from './utils/initialData.ts';
-import { User, Account, Transaction } from './types.ts';
+// Fix: Add file extension to import to ensure module resolution.
+import { User, Account, Transaction, View } from './types.ts';
+// Fix: Add file extension to import to ensure module resolution.
+import { ThemeName, applyTheme } from './utils/themes.ts';
 
-const App: React.FC = () => {
+function App() {
     const [users, setUsers] = useLocalStorage<User[]>('users', initialUsers);
     const [accounts, setAccounts] = useLocalStorage<Account[]>('accounts', initialAccounts);
     const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', initialTransactions);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
+    const [view, setView] = useLocalStorage<View>('view', 'dashboard');
+    const [theme, setTheme] = useLocalStorage<ThemeName>('theme', 'dark');
 
-    const handleAuthSuccess = (user: User) => {
+    useEffect(() => {
+        applyTheme(theme);
+    }, [theme]);
+
+    const handleLogin = (user: User) => {
         setCurrentUser(user);
-    };
-
-    const handleRegister = (newUser: Omit<User, 'id' | 'password'> & { passwordPlain: string }): User | null => {
-        if (users.some(u => u.email === newUser.email)) {
-            return null;
-        }
-        const user: User = {
-            id: `user-${Date.now()}`,
-            name: newUser.name,
-            email: newUser.email,
-            password: newUser.passwordPlain,
-        };
-        setUsers([...users, user]);
-        return user;
     };
 
     const handleLogout = () => {
         setCurrentUser(null);
+        setView('dashboard');
+    };
+
+    const handleRegister = (newUserDto: Omit<User, 'id' | 'password'> & { passwordPlain: string }): User | null => {
+        if (users.some(u => u.email === newUserDto.email)) {
+            return null; // Email already exists
+        }
+        const newUser: User = {
+            id: `user-${uuidv4()}`,
+            name: newUserDto.name,
+            email: newUserDto.email,
+            password: newUserDto.passwordPlain, // Not hashing for this example
+        };
+        setUsers([...users, newUser]);
+        return newUser;
     };
     
-    const userAccounts = currentUser ? accounts.filter(acc => acc.userId === currentUser.id) : [];
-    const userTransactions = currentUser ? transactions.filter(tx => tx.userId === currentUser.id) : [];
+    // Filter data based on current user
+    const userAccounts = accounts.filter(acc => acc.userId === currentUser?.id);
+    const userTransactions = transactions.filter(txn => txn.userId === currentUser?.id);
 
-    // Account handlers
-    const handleAddAccount = (account: Omit<Account, 'id' | 'userId'>) => {
+    // CRUD for Accounts
+    const handleAddAccount = (accountData: Omit<Account, 'id' | 'userId'>) => {
         if (!currentUser) return;
-        const newAccount: Account = { ...account, id: `acc-${Date.now()}`, userId: currentUser.id };
+        const newAccount: Account = {
+            ...accountData,
+            id: `acc-${uuidv4()}`,
+            userId: currentUser.id,
+        };
         setAccounts([...accounts, newAccount]);
     };
-    
+
     const handleUpdateAccount = (updatedAccount: Account) => {
         setAccounts(accounts.map(acc => acc.id === updatedAccount.id ? updatedAccount : acc));
     };
-    
+
     const handleDeleteAccount = (accountId: string) => {
+        // Also delete associated transactions
+        setTransactions(transactions.filter(txn => txn.accountId !== accountId));
         setAccounts(accounts.filter(acc => acc.id !== accountId));
-        // Also delete related transactions
-        setTransactions(transactions.filter(tx => tx.accountId !== accountId));
     };
 
-    // Transaction handlers
-    const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'userId'>) => {
+    // CRUD for Transactions
+    const handleAddTransaction = (transactionData: Omit<Transaction, 'id' | 'userId'>) => {
         if (!currentUser) return;
-        const newTransaction: Transaction = { ...transaction, id: `txn-${Date.now()}`, userId: currentUser.id };
+        const newTransaction: Transaction = {
+            ...transactionData,
+            id: `txn-${uuidv4()}`,
+            userId: currentUser.id,
+        };
         setTransactions([...transactions, newTransaction]);
     };
 
     const handleUpdateTransaction = (updatedTransaction: Transaction) => {
-        setTransactions(transactions.map(tx => tx.id === updatedTransaction.id ? updatedTransaction : tx));
+        setTransactions(transactions.map(txn => txn.id === updatedTransaction.id ? updatedTransaction : txn));
     };
 
     const handleDeleteTransaction = (transactionId: string) => {
-        setTransactions(transactions.filter(tx => tx.id !== transactionId));
+        setTransactions(transactions.filter(txn => txn.id !== transactionId));
     };
-
-
+    
     if (!currentUser) {
-        return <Login onAuthSuccess={handleAuthSuccess} onRegister={handleRegister} users={users} />;
+        return <Login onAuthSuccess={handleLogin} onRegister={handleRegister} users={users} />;
     }
 
     return (
-        <Dashboard 
+        <Dashboard
             user={currentUser}
             accounts={userAccounts}
             transactions={userTransactions}
+            view={view}
+            theme={theme}
+            onNavigate={setView}
             onLogout={handleLogout}
             onAddAccount={handleAddAccount}
             onUpdateAccount={handleUpdateAccount}
@@ -85,8 +111,9 @@ const App: React.FC = () => {
             onAddTransaction={handleAddTransaction}
             onUpdateTransaction={handleUpdateTransaction}
             onDeleteTransaction={handleDeleteTransaction}
+            onThemeChange={setTheme}
         />
     );
-};
+}
 
 export default App;

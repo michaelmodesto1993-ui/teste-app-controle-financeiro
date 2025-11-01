@@ -2,7 +2,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    password?: string; // Stored for simplicity in this example
+    password: string; // In a real app, this would be a hash.
 }
 
 export interface Account {
@@ -19,14 +19,14 @@ export enum TransactionType {
 }
 
 export enum TransactionCategory {
-    FOOD = 'Alimentação',
-    TRANSPORT = 'Transporte',
-    HOUSING = 'Moradia',
-    BILLS = 'Contas',
-    LEISURE = 'Lazer',
-    HEALTH = 'Saúde',
     SALARY = 'Salário',
     INVESTMENTS = 'Investimentos',
+    HOUSING = 'Moradia',
+    FOOD = 'Alimentação',
+    TRANSPORT = 'Transporte',
+    HEALTH = 'Saúde',
+    EDUCATION = 'Educação',
+    LEISURE = 'Lazer',
     OTHER = 'Outros',
 }
 
@@ -37,6 +37,9 @@ export interface Transaction {
     type: TransactionType;
     description: string;
     amount: number;
-    date: string; // ISO string
+    date: string; // ISO string format
     category: TransactionCategory;
 }
+
+// Defines the possible views in the main dashboard layout.
+export type View = 'dashboard' | 'accounts' | 'transactions' | 'settings';
