@@ -13,6 +13,8 @@ import Transactions from './Transactions.tsx';
 import ExpensesByAccount from './ExpensesByAccount.tsx';
 // Fix: Add file extension to import to ensure module resolution.
 import ErrorBoundary from './ErrorBoundary.tsx';
+// Fix: Add file extension to import to ensure module resolution.
+import IncomeChart from './IncomeChart.tsx';
 
 interface DashboardViewProps {
     accounts: Account[];
@@ -33,7 +35,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({ accounts, transactions })
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <ErrorBoundary>
+                    <IncomeChart transactions={transactions} />
+                </ErrorBoundary>
                 <ErrorBoundary>
                     <CategoryChart transactions={transactions} />
                 </ErrorBoundary>

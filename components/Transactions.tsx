@@ -17,7 +17,10 @@ const Transactions: React.FC<TransactionsProps> = ({ transactions, accounts, lim
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, limit);
 
-    const getAccountName = (accountId: string) => accounts.find(a => a.id === accountId)?.name || 'N/A';
+    const getAccountDisplay = (accountId: string) => {
+        const account = accounts.find(a => a.id === accountId);
+        return account ? `${account.name} (${account.type})` : 'N/A';
+    };
     const getAccountCurrency = (accountId: string) => accounts.find(a => a.id === accountId)?.currency;
 
     return (
@@ -33,7 +36,7 @@ const Transactions: React.FC<TransactionsProps> = ({ transactions, accounts, lim
                                 </div>
                                 <div>
                                     <p className="font-semibold">{t.description}</p>
-                                    <p className="text-sm text-text-secondary">{getAccountName(t.accountId)} &middot; {formatDateReadable(t.date)}</p>
+                                    <p className="text-sm text-text-secondary">{getAccountDisplay(t.accountId)} &middot; {formatDateReadable(t.date)}</p>
                                 </div>
                             </div>
                             <span className={`font-bold ${t.type === TransactionType.INCOME ? 'text-income' : 'text-expense'}`}>

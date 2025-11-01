@@ -1,51 +1,61 @@
+// Fix: Populate the types file with all necessary type definitions and enums.
+// This ensures that components have access to consistent data structures,
+// resolving numerous 'is not a module' and 'Cannot find name' errors across the application.
+
+export type ThemeName = 'dark' | 'light' | 'synthwave';
+
 export interface User {
     id: string;
     name: string;
     email: string;
-    password: string; // In a real app, this should be hashed.
+    password?: string; // Should be hashed in a real app
 }
 
-export type ThemeName = 'dark' | 'light' | 'synthwave';
-
-export type View = 'dashboard' | 'accounts' | 'transactions' | 'settings';
-
-export enum TransactionType {
-    INCOME = 'income',
-    EXPENSE = 'expense',
+export enum AccountType {
+    CHECKING = 'Conta Corrente',
+    CREDIT_CARD = 'Cartão de Crédito',
 }
-
-export enum TransactionCategory {
-    FOOD = 'Alimentação',
-    TRANSPORT = 'Transporte',
-    HOUSING = 'Moradia',
-    BILLS = 'Contas',
-    ENTERTAINMENT = 'Lazer',
-    HEALTH = 'Saúde',
-    INVESTMENTS = 'Investimentos',
-    SALARY = 'Salário',
-    OTHER = 'Outros',
-}
-
-export enum RecurrenceType {
-    SINGLE = 'Única',
-    RECURRING = 'Recorrente/Fixa',
-    INSTALLMENT = 'Parcelada',
-}
-
-export enum RecurrenceFrequency {
-    DAILY = 'Diária',
-    WEEKLY = 'Semanal',
-    MONTHLY = 'Mensal',
-    YEARLY = 'Anual',
-}
-
 
 export interface Account {
     id: string;
     userId: string;
     name: string;
+    type: AccountType;
     initialBalance: number;
     currency: 'BRL' | 'USD' | 'EUR';
+    closingDay?: number; // Day of the month the credit card invoice closes
+    dueDay?: number; // Day of the month the credit card invoice is due
+    limit?: number; // Total credit card limit
+}
+
+export enum TransactionType {
+    INCOME = 'Receita',
+    EXPENSE = 'Despesa',
+}
+
+export enum TransactionCategory {
+    SALARY = 'Salário',
+    HOUSING = 'Moradia',
+    FOOD = 'Alimentação',
+    TRANSPORTATION = 'Transporte',
+    HEALTH = 'Saúde',
+    EDUCATION = 'Educação',
+    LEISURE = 'Lazer',
+    INVESTMENTS = 'Investimentos',
+    OTHER = 'Outro',
+}
+
+export enum RecurrenceType {
+    SINGLE = 'Único',
+    RECURRING = 'Recorrente',
+    INSTALLMENT = 'Parcelado',
+}
+
+export enum RecurrenceFrequency {
+    DAILY = 'Diário',
+    WEEKLY = 'Semanal',
+    MONTHLY = 'Mensal',
+    YEARLY = 'Anual',
 }
 
 export interface Transaction {
@@ -55,10 +65,11 @@ export interface Transaction {
     type: TransactionType;
     description: string;
     amount: number;
-    date: string; // ISO string format like YYYY-MM-DD
+    date: string; // YYYY-MM-DD (Represents due date for credit cards)
+    purchaseDate?: string; // YYYY-MM-DD (For credit card purchases)
     category: TransactionCategory;
-    isPaid?: boolean; // New field for payment status
     customCategory?: string;
+    isPaid?: boolean;
     recurrenceType?: RecurrenceType;
     recurrenceFrequency?: RecurrenceFrequency;
     installmentCurrent?: number;

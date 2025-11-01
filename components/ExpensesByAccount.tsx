@@ -16,7 +16,7 @@ const ExpensesByAccount: React.FC<ExpensesByAccountProps> = ({ accounts, transac
         const accountExpenses = expenses
             .filter(t => t.accountId === account.id)
             .reduce((sum, t) => sum + t.amount, 0);
-        return { name: account.name, amount: accountExpenses };
+        return { name: account.name, type: account.type, amount: accountExpenses };
     }).filter(a => a.amount > 0);
     
     const totalExpenses = expensesByAccount.reduce((sum, a) => sum + a.amount, 0);
@@ -27,12 +27,12 @@ const ExpensesByAccount: React.FC<ExpensesByAccountProps> = ({ accounts, transac
             <h3 className="font-bold mb-4">Despesas por Conta</h3>
             {expensesByAccount.length > 0 ? (
                 <div className="space-y-4">
-                    {expensesByAccount.map(({ name, amount }, index) => {
+                    {expensesByAccount.map(({ name, type, amount }, index) => {
                         const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
                         return (
                             <div key={name}>
                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="text-sm text-text-secondary">{name}</span>
+                                    <span className="text-sm text-text-secondary">{name} ({type})</span>
                                     <span className="text-sm font-semibold">{formatCurrency(amount)}</span>
                                 </div>
                                 <div className="w-full bg-background rounded-full h-2.5">

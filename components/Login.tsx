@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 // Fix: Add file extension to import to ensure module resolution.
 import { User } from '../types.ts';
+import { Logo } from './Logo.tsx';
 
 interface LoginProps {
     onAuthSuccess: (user: User) => void;
@@ -43,7 +44,12 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess, onRegister, users }) => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
             <div className="p-8 bg-surface rounded-lg shadow-lg w-full max-w-sm">
-                <h1 className="text-2xl font-bold text-center mb-2">FinTrack Pro</h1>
+                <div className="flex flex-col items-center justify-center mb-4">
+                    <Logo />
+                    <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-expense to-income bg-clip-text text-transparent mt-2">
+                        MAIRFIM
+                    </h1>
+                </div>
                 <h2 className="text-center text-text-secondary mb-6">{isRegistering ? 'Crie a sua conta' : 'Acesse a sua conta'}</h2>
                 <form onSubmit={handleSubmit}>
                     {isRegistering && (

@@ -7,6 +7,8 @@ interface SettingsPageProps {
     onThemeChange: (theme: ThemeName) => void;
     investmentPercentage: number;
     onInvestmentPercentageChange: (percentage: number) => void;
+    creditCardAlertThreshold: number;
+    onCreditCardAlertThresholdChange: (percentage: number) => void;
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({
@@ -14,11 +16,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     onThemeChange,
     investmentPercentage,
     onInvestmentPercentageChange,
+    creditCardAlertThreshold,
+    onCreditCardAlertThresholdChange,
 }) => {
     return (
-        <div className="space-y-8 max-w-2xl mx-auto">
-            <h2 className="text-xl font-bold">Configurações</h2>
-            
+        <div className="space-y-8 max-w-3xl">
             <div className="bg-surface p-6 rounded-lg shadow-lg">
                 <h3 className="font-bold mb-4">Tema do Aplicativo</h3>
                 <div className="flex space-x-4">
@@ -59,6 +61,24 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                         style={{'--thumb-color': 'var(--color-primary)'} as React.CSSProperties} // Custom property for thumb color if using custom CSS
                     />
                      <span className="font-semibold w-16 text-center">{investmentPercentage}%</span>
+                </div>
+            </div>
+
+            <div className="bg-surface p-6 rounded-lg shadow-lg">
+                <h3 className="font-bold mb-2">Alerta de Limite do Cartão de Crédito</h3>
+                <p className="text-text-secondary text-sm mb-4">
+                    Receba uma notificação quando o total da sua fatura atingir uma certa porcentagem do limite total do cartão.
+                </p>
+                <div className="flex items-center space-x-4">
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        value={creditCardAlertThreshold}
+                        onChange={(e) => onCreditCardAlertThresholdChange(parseInt(e.target.value, 10))}
+                        className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer"
+                    />
+                     <span className="font-semibold w-16 text-center">{creditCardAlertThreshold}%</span>
                 </div>
             </div>
         </div>
