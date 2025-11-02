@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import * as XLSX from 'xlsx';
 import { Transaction, Account, TransactionType } from '../types.ts';
 import { formatCurrency, formatMonthYear, formatDateReadable } from '../utils/helpers.ts';
 import { IncomeIcon, ExpenseIcon, ExportIcon } from './icons.tsx';
@@ -84,7 +87,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ transactions, accounts }) => 
         };
     }, [currentDate, transactions]);
 
-    const handleExport = (format: 'xlsx' | 'csv') => {
+    const handleExport = async (format: 'xlsx' | 'csv') => {
         if (monthlyTransactions.length === 0) return;
 
         const dataToExport = monthlyTransactions.map(t => {
@@ -102,24 +105,32 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ transactions, accounts }) => 
                 'Status': t.type === TransactionType.EXPENSE ? (t.isPaid ? 'Pago' : 'Pendente') : ''
             };
         });
-
-        const xlsxLib = (window as any).XLSX;
-
-        if (!xlsxLib || !xlsxLib.utils) {
-            console.error("XLSX library not loaded correctly.");
-            alert("Erro ao exportar. A biblioteca de planilhas não foi carregada. Tente recarregar a página.");
-            return;
-        }
         
-        const ws = xlsxLib.utils.json_to_sheet(dataToExport);
-        const wb = xlsxLib.utils.book_new();
-        xlsxLib.utils.book_append_sheet(wb, ws, 'Transações');
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Transações');
 
         const year = currentDate.getFullYear();
         const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
         const fileName = `MAIRFIM_Relatorio_${year}-${month}.${format}`;
         
-        xlsxLib.writeFile(wb, fileName);
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const base64 = XLSX.write(wb, { bookType: format as any, type: 'base64' });
+                await Filesystem.writeFile({
+                    path: fileName,
+                    data: base64,
+                    directory: Directory.Documents,
+                    recursive: true
+                });
+                alert(`Relatório salvo em Documentos: ${fileName}`);
+            } catch (e) {
+                console.error('Error saving file', e);
+                alert('Erro ao salvar o arquivo.');
+            }
+        } else {
+            XLSX.writeFile(wb, fileName);
+        }
     };
 
     return (

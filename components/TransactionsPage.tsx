@@ -179,7 +179,7 @@ const TransactionModal: React.FC<{
     const [accountId, setAccountId] = useState(transaction?.accountId || (accounts.length > 0 ? accounts[0].id : ''));
     const [type, setType] = useState<TransactionType>(transaction?.type || TransactionType.EXPENSE);
     const [description, setDescription] = useState(transaction?.description || '');
-    const [amount, setAmount] = useState(transaction?.amount || 0);
+    const [amount, setAmount] = useState<string>(transaction ? String(transaction.amount) : '');
     
     // 'date' will be purchaseDate for CC expenses, and the actual date for others
     const [date, setDate] = useState(transaction ? formatDate(transaction.purchaseDate || transaction.date) : formatDate(new Date().toISOString()));
@@ -237,13 +237,14 @@ const TransactionModal: React.FC<{
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if(!accountId || !description || amount <= 0 || (category === TransactionCategory.OTHER && !customCategory)) {
+        const numericAmount = parseFloat(amount.replace(',', '.')) || 0;
+        if(!accountId || !description || numericAmount <= 0 || (category === TransactionCategory.OTHER && !customCategory)) {
             // Basic validation
             return;
         }
         
         const dataToSave: Omit<Transaction, 'id' | 'userId'> = {
-            accountId, type, description, amount, 
+            accountId, type, description, amount: numericAmount, 
             date: isCreditCardExpense && !isInstallment ? dueDate! : date,
             category, recurrenceType,
         };
@@ -285,7 +286,7 @@ const TransactionModal: React.FC<{
                     {isCreditCardExpense && availableCredit !== null && (
                         <div className="mb-4 bg-surface-dark p-3 rounded-lg text-sm">
                             <span className="text-text-secondary">Limite disponível: </span>
-                            <span className={`font-semibold ${availableCredit > amount ? 'text-income' : 'text-expense'}`}>{formatCurrency(availableCredit)}</span>
+                            <span className={`font-semibold ${availableCredit > parseFloat(amount.replace(',', '.')) ? 'text-income' : 'text-expense'}`}>{formatCurrency(availableCredit)}</span>
                         </div>
                     )}
                     <div className="mb-4">
@@ -336,7 +337,7 @@ const TransactionModal: React.FC<{
                            <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="amount">
                                 {isInstallment ? 'Valor Total da Compra' : 'Valor'}
                            </label>
-                           <input id="amount" type="number" step="0.01" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || 0)} className="p-2 w-full rounded bg-background border border-border" required />
+                           <input id="amount" type="number" step="0.01" placeholder="0,00" value={amount} onChange={e => setAmount(e.target.value)} className="p-2 w-full rounded bg-background border border-border" required />
                         </div>
                         <div>
                              <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="date">

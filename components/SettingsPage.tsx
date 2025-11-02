@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// Fix: Add file extension to import to ensure module resolution.
 import { ThemeName } from '../types.ts';
+import { TrashIcon } from './icons.tsx';
 
 interface SettingsPageProps {
     theme: ThemeName;
@@ -21,91 +21,145 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     onCreditCardAlertThresholdChange,
     onClearAllTransactions,
 }) => {
-    const [isClearDataModalOpen, setIsClearDataModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [apiKey, setApiKey] = useState(localStorage.getItem('mairfim-gemini-api-key') || '');
+
+    const handleConfirmDelete = () => {
+        onClearAllTransactions();
+        setIsDeleteModalOpen(false);
+    };
+
+    const handleApiKeySave = () => {
+        if (apiKey.trim()) {
+            localStorage.setItem('mairfim-gemini-api-key', apiKey.trim());
+            alert('Chave de API salva com sucesso!');
+        } else {
+            // If the input is empty, treat it as a removal.
+            handleApiKeyRemove();
+        }
+    };
+
+    const handleApiKeyRemove = () => {
+        localStorage.removeItem('mairfim-gemini-api-key');
+        setApiKey('');
+        alert('Chave de API personalizada removida. O aplicativo voltará a usar a chave padrão.');
+    };
 
     return (
-        <div className="space-y-8 max-w-3xl">
+        <div className="space-y-8 max-w-4xl mx-auto">
             <div className="bg-surface p-6 rounded-lg shadow-lg">
-                <h3 className="font-bold mb-4">Tema do Aplicativo</h3>
-                <div className="flex space-x-4">
-                    <button 
-                        onClick={() => onThemeChange('dark')} 
-                        className={`py-2 px-4 rounded transition-colors ${theme === 'dark' ? 'bg-primary text-white' : 'bg-surface-dark'}`}
-                    >
-                        Escuro
-                    </button>
-                    <button 
-                        onClick={() => onThemeChange('light')} 
-                        className={`py-2 px-4 rounded transition-colors ${theme === 'light' ? 'bg-primary text-white' : 'bg-surface-dark'}`}
-                    >
-                        Claro
-                    </button>
-                    <button 
-                        onClick={() => onThemeChange('synthwave')} 
-                        className={`py-2 px-4 rounded transition-colors ${theme === 'synthwave' ? 'bg-primary text-white' : 'bg-surface-dark'}`}
-                    >
-                        Synthwave
-                    </button>
+                <h3 className="text-xl font-bold mb-4">Aparência</h3>
+                <div className="space-y-2">
+                    <label className="block text-text-secondary text-sm font-bold mb-2">Tema do Aplicativo</label>
+                    <div className="flex space-x-4">
+                        {(['dark', 'light', 'synthwave'] as ThemeName[]).map(themeName => (
+                            <button
+                                key={themeName}
+                                onClick={() => onThemeChange(themeName)}
+                                className={`py-2 px-4 rounded capitalize w-full transition-colors ${
+                                    theme === themeName ? 'bg-primary text-white font-bold' : 'bg-surface-dark hover:bg-border'
+                                }`}
+                            >
+                                {themeName}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             <div className="bg-surface p-6 rounded-lg shadow-lg">
-                <h3 className="font-bold mb-2">Investimento Automático</h3>
-                <p className="text-text-secondary text-sm mb-4">
-                    Defina uma porcentagem de cada receita para ser automaticamente registrada como uma despesa de investimento.
-                </p>
-                <div className="flex items-center space-x-4">
-                    <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={investmentPercentage}
-                        onChange={(e) => onInvestmentPercentageChange(parseInt(e.target.value, 10))}
-                        className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer"
-                        style={{'--thumb-color': 'var(--color-primary)'} as React.CSSProperties} // Custom property for thumb color if using custom CSS
-                    />
-                     <span className="font-semibold w-16 text-center">{investmentPercentage}%</span>
+                <h3 className="text-xl font-bold mb-4">Chave de API da IA</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="apiKey" className="block text-text-secondary text-sm font-bold mb-2">
+                           Chave de API do Google GenAI
+                        </label>
+                        <p className="text-xs text-text-secondary mb-2">
+                           O aplicativo possui uma chave de API padrão. Se a IA parar de funcionar, você pode colar uma nova chave (obtida no Google AI Studio) aqui para restaurar a funcionalidade.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                                id="apiKey"
+                                type="password"
+                                placeholder="Cole sua nova chave de API aqui"
+                                value={apiKey}
+                                onChange={e => setApiKey(e.target.value)}
+                                className="flex-1 p-2 rounded bg-background border border-border"
+                            />
+                            <button onClick={handleApiKeySave} className="py-2 px-4 rounded bg-primary text-white hover:bg-primary-dark">
+                                Salvar
+                            </button>
+                            <button onClick={handleApiKeyRemove} className="py-2 px-4 rounded bg-surface-dark text-text-secondary hover:bg-border">
+                                Usar Padrão
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div className="bg-surface p-6 rounded-lg shadow-lg">
-                <h3 className="font-bold mb-2">Alerta de Limite do Cartão de Crédito</h3>
-                <p className="text-text-secondary text-sm mb-4">
-                    Receba uma notificação quando o total da sua fatura atingir uma certa porcentagem do limite total do cartão.
-                </p>
-                <div className="flex items-center space-x-4">
-                    <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={creditCardAlertThreshold}
-                        onChange={(e) => onCreditCardAlertThresholdChange(parseInt(e.target.value, 10))}
-                        className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer"
-                    />
-                     <span className="font-semibold w-16 text-center">{creditCardAlertThreshold}%</span>
+                <h3 className="text-xl font-bold mb-4">Automação</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="investmentPercentage" className="block text-text-secondary text-sm font-bold mb-2">
+                            Porcentagem para Investimento Automático ({investmentPercentage}%)
+                        </label>
+                        <p className="text-xs text-text-secondary mb-2">
+                            Ao receber uma receita, este percentual será automaticamente movido para a categoria "Investimentos".
+                        </p>
+                        <input
+                            id="investmentPercentage"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={investmentPercentage}
+                            onChange={e => onInvestmentPercentageChange(Number(e.target.value))}
+                            className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                    </div>
+                     <div>
+                        <label htmlFor="creditCardAlertThreshold" className="block text-text-secondary text-sm font-bold mb-2">
+                            Alerta de Limite do Cartão de Crédito ({creditCardAlertThreshold}%)
+                        </label>
+                         <p className="text-xs text-text-secondary mb-2">
+                            Receba uma notificação quando o uso do limite do seu cartão de crédito atingir este percentual.
+                        </p>
+                        <input
+                            id="creditCardAlertThreshold"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={creditCardAlertThreshold}
+                            onChange={e => onCreditCardAlertThresholdChange(Number(e.target.value))}
+                             className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-surface p-6 rounded-lg shadow-lg border border-expense/50">
-                <h3 className="font-bold mb-2 text-expense">Zona de Perigo</h3>
-                <p className="text-text-secondary text-sm mb-4">
-                    A ação abaixo é irreversível. Tenha certeza do que está fazendo.
-                </p>
-                <button
-                    onClick={() => setIsClearDataModalOpen(true)}
-                    className="bg-expense text-white font-bold py-2 px-4 rounded hover:bg-expense/80 transition-colors"
-                >
-                    Limpar Todas as Transações
-                </button>
+             <div className="bg-surface p-6 rounded-lg shadow-lg border border-expense/50">
+                <h3 className="text-xl font-bold mb-4 text-expense">Zona de Perigo</h3>
+                <div className="space-y-4">
+                    <div>
+                        <h4 className="font-bold">Limpar Todas as Transações</h4>
+                         <p className="text-sm text-text-secondary mt-1 mb-3">
+                            Esta ação removerá permanentemente todas as suas transações. Suas contas não serão afetadas. Esta ação não pode ser desfeita.
+                        </p>
+                        <button
+                            onClick={() => setIsDeleteModalOpen(true)}
+                            className="bg-expense text-white font-bold py-2 px-4 rounded hover:bg-expense/80 transition-colors flex items-center"
+                        >
+                            <TrashIcon className="w-5 h-5 mr-2" />
+                            Limpar Transações
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            {isClearDataModalOpen && (
-                <ConfirmationModal
-                    onConfirm={() => {
-                        onClearAllTransactions();
-                        setIsClearDataModalOpen(false);
-                    }}
-                    onClose={() => setIsClearDataModalOpen(false)}
+            
+            {isDeleteModalOpen && (
+                 <ConfirmationModal
+                    onConfirm={handleConfirmDelete}
+                    onClose={() => setIsDeleteModalOpen(false)}
                 />
             )}
         </div>
@@ -117,11 +171,11 @@ const ConfirmationModal: React.FC<{
     onClose: () => void;
 }> = ({ onConfirm, onClose }) => {
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-surface rounded-lg shadow-lg p-8 w-full max-w-md">
-                <h3 className="text-lg font-bold mb-2">Confirmar Limpeza de Dados</h3>
+                <h3 className="text-lg font-bold mb-2">Confirmar Ação</h3>
                 <p className="text-text-secondary mb-6">
-                    Você tem certeza que deseja excluir <span className="font-bold text-expense">TODAS</span> as suas transações?
+                    Tem certeza que deseja excluir <span className="font-bold text-expense">TODAS</span> as suas transações?
                     <br />
                     Esta ação não pode ser desfeita.
                 </p>
@@ -130,13 +184,12 @@ const ConfirmationModal: React.FC<{
                         Cancelar
                     </button>
                     <button type="button" onClick={onConfirm} className="py-2 px-4 rounded bg-expense text-white hover:bg-expense/80">
-                        Sim, Excluir Tudo
+                        Excluir Tudo
                     </button>
                 </div>
             </div>
         </div>
     );
 };
-
 
 export default SettingsPage;

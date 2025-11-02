@@ -1,23 +1,14 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
-      },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      }
-    };
-});
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  // Este bloco 'define' torna as variáveis de ambiente disponíveis para o código do lado do cliente.
+  // Ele stringifica com segurança o valor de process.env.API_KEY durante o processo de build.
+  // Isso permite que o código do aplicativo acesse a chave de API via `process.env.API_KEY`
+  // enquanto adere às diretrizes de codificação da API do Gemini.
+  define: {
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
+  }
+})

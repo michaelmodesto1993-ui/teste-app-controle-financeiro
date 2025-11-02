@@ -1,21 +1,23 @@
 import React from 'react';
-import { DashboardIcon, AccountsIcon, TransactionsIcon, SettingsIcon, ReportsIcon } from './icons.tsx';
+import { DashboardIcon, AccountsIcon, TransactionsIcon, SettingsIcon, ReportsIcon, GeminiIcon, LogoutIcon } from './icons.tsx';
 import { Logo } from './Logo.tsx';
 
-type View = 'dashboard' | 'accounts' | 'transactions' | 'settings' | 'reports';
+type View = 'dashboard' | 'accounts' | 'transactions' | 'settings' | 'reports' | 'gemini';
 
 interface SidebarProps {
     currentView: View;
     onViewChange: (view: View) => void;
     isOpen: boolean;
+    onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen, onLogout }) => {
     const navItems = [
         { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
         { id: 'accounts', label: 'Contas', icon: AccountsIcon },
         { id: 'transactions', label: 'Transações', icon: TransactionsIcon },
         { id: 'reports', label: 'Relatórios', icon: ReportsIcon },
+        { id: 'gemini', label: 'MAIRFIM AI', icon: GeminiIcon },
         { id: 'settings', label: 'Configurações', icon: SettingsIcon },
     ];
 
@@ -43,6 +45,15 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen }) 
                     </button>
                 ))}
             </nav>
+            <div className="p-4 border-t border-border">
+                <button
+                    onClick={onLogout}
+                    className="w-full flex items-center p-3 rounded-lg transition-colors text-text-secondary hover:bg-surface-dark hover:text-text-primary"
+                >
+                    <LogoutIcon className="w-6 h-6 mr-3" />
+                    Sair
+                </button>
+            </div>
         </aside>
     );
 };

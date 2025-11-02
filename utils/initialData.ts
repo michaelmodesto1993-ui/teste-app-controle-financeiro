@@ -2,7 +2,7 @@ import { User, Account, Transaction, TransactionType, TransactionCategory, Recur
 import { formatDate, calculateCreditCardDueDate } from './helpers.ts';
 
 export const initialUsers: User[] = [
-    { id: 'user-1', name: 'John Doe', email: 'john@example.com', password: 'password123' }
+    { id: 'user-1', name: 'Usuário Padrão', email: 'mairfim@email.com', password: '123' }
 ];
 
 export const initialAccounts: Account[] = [
@@ -11,8 +11,8 @@ export const initialAccounts: Account[] = [
 ];
 
 const smartphonePurchaseDate = new Date('2024-03-15T00:00:00');
-const nubankCard = initialAccounts[1];
-const firstDueDate = calculateCreditCardDueDate(smartphonePurchaseDate, nubankCard.closingDay!, nubankCard.dueDay!);
+const nubankCard = initialAccounts.find(a => a.id === 'acc-2');
+const firstDueDate = calculateCreditCardDueDate(smartphonePurchaseDate, nubankCard!.closingDay!, nubankCard!.dueDay!);
 
 const smartphoneInstallments: Transaction[] = Array.from({ length: 12 }, (_, i) => {
     const installmentDueDate = new Date(firstDueDate);
@@ -51,6 +51,7 @@ export const initialTransactions: Transaction[] = [
         category: TransactionCategory.SALARY,
         recurrenceType: RecurrenceType.RECURRING,
         recurrenceFrequency: RecurrenceFrequency.MONTHLY,
+        isPaid: true,
     },
     {
         id: 't-2',

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-// Fix: Add file extension to import to ensure module resolution.
 import { User } from '../types.ts';
 import { Logo } from './Logo.tsx';
 
 interface LoginProps {
-    onAuthSuccess: (user: User, remember: boolean) => void;
-    onRegister: (newUser: Omit<User, 'id' | 'password'> & { passwordPlain: string }) => User | null;
+    onAuthSuccess: (user: User) => void;
+    onRegister: (newUser: Omit<User, 'id'>) => User | null;
     users: User[];
 }
 
@@ -18,17 +17,30 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess, onRegister, users }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        // Pre-fill credentials if they were remembered from a previous session
-        const rememberedEmail = localStorage.getItem('rememberedEmail');
-        const rememberedPassword = localStorage.getItem('rememberedPassword');
-
-        if (rememberedEmail && rememberedPassword) {
-            setEmail(rememberedEmail);
-            setPassword(rememberedPassword);
-            setRememberMe(true);
+        const rememberedUserId = localStorage.getItem('rememberedUserId');
+        if (rememberedUserId) {
+            const rememberedEmail = localStorage.getItem(`rememberedEmail_${rememberedUserId}`);
+            const rememberedPassword = localStorage.getItem(`rememberedPassword_${rememberedUserId}`);
+            if (rememberedEmail && rememberedPassword) {
+                setEmail(rememberedEmail);
+                setPassword(rememberedPassword);
+                setRememberMe(true);
+            }
         }
-    }, []); // Empty dependency array ensures this runs only once on mount
+    }, []);
 
+    const handleSuccessfulLogin = (user: User, pass: string, remember: boolean) => {
+        if (remember) {
+            localStorage.setItem('rememberedUserId', user.id);
+            localStorage.setItem(`rememberedEmail_${user.id}`, user.email);
+            localStorage.setItem(`rememberedPassword_${user.id}`, pass);
+        } else {
+            localStorage.removeItem('rememberedUserId');
+            localStorage.removeItem(`rememberedEmail_${user.id}`);
+            localStorage.removeItem(`rememberedPassword_${user.id}`);
+        }
+        onAuthSuccess(user);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,18 +51,16 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess, onRegister, users }) => {
                 setError('Todos os campos são obrigatórios.');
                 return;
             }
-            const newUser = onRegister({ name, email, passwordPlain: password });
+            const newUser = onRegister({ name, email, password });
             if (newUser) {
-                // After registration, always log in and remember the session
-                // for a seamless user experience.
-                onAuthSuccess(newUser, true);
+                handleSuccessfulLogin(newUser, password, rememberMe);
             } else {
                 setError('Este e-mail já está em uso.');
             }
         } else {
             const user = users.find(u => u.email === email && u.password === password);
             if (user) {
-                onAuthSuccess(user, rememberMe);
+                handleSuccessfulLogin(user, password, rememberMe);
             } else {
                 setError('E-mail ou senha inválidos.');
             }
@@ -94,7 +104,7 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess, onRegister, users }) => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="p-2 w-full rounded bg-background border border-border"
-                            placeholder="user@example.com"
+                            placeholder="mairfim@email.com"
                             required
                             autoComplete="username"
                         />
@@ -103,16 +113,18 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess, onRegister, users }) => {
                         <label className="block text-text-secondary text-sm font-bold mb-2" htmlFor="password">
                             Senha
                         </label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="p-2 w-full rounded bg-background border border-border"
-                            placeholder="********"
-                            required
-                            autoComplete={isRegistering ? 'new-password' : 'current-password'}
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="p-2 w-full rounded bg-background border border-border pr-10"
+                                placeholder="********"
+                                required
+                                autoComplete={isRegistering ? 'new-password' : 'current-password'}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between mb-6">

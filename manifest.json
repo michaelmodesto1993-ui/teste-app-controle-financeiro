@@ -1,0 +1,16 @@
+{
+  "name": "MAIRFIM",
+  "short_name": "MAIRFIM",
+  "description": "Sua plataforma inteligente para gestão de finanças pessoais.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#1e1e1e",
+  "background_color": "#121212"
+}
